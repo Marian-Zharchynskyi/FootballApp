@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FootballApp.Core.Entities
 {
     public class Tournament : IEntity<Guid>
     {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public ICollection<Match> Matches { get; set; }
-        public string Sponsor { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid(); 
+        public string Name { get; set; } = string.Empty;
+        public DateTime StartDate { get; set; } = DateTime.Now;
+        public DateTime EndDate { get; set; } = DateTime.Now;
+        public virtual ICollection<Match> Matches { get; set; } = new HashSet<Match>();
+        public string Sponsor { get; set; } = string.Empty;
     }
 }
