@@ -4,13 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FootballApp.Core.Entities
 {
-    public class Transfer : IEntity<Guid>
+    public class PlayerTransfer : IEntity<Guid>
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-
-        public virtual Player Player { get; set; }
-        [ForeignKey(nameof(Player))]
-        public Guid PlayerId { get; set; }
 
         public virtual Team FromTeam { get; set; }
         [ForeignKey(nameof(FromTeam))]

@@ -8,8 +8,7 @@ namespace FootballApp.Core.Entities
     public class Player : IEntity<Guid>
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
         public DateTime BirthDate { get; set; } = DateTime.Now;
         public string Position { get; set; } = string.Empty;
 
@@ -19,5 +18,7 @@ namespace FootballApp.Core.Entities
 
         public virtual ICollection<Statistics> Statistics { get; set; } = new HashSet<Statistics>();
         public decimal MarketValue { get; set; }
+
+        public virtual ICollection<PlayerTransfer> PlayerTransfers { get; set; } = new HashSet<PlayerTransfer>();
     }
 }
