@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FootballApp.Server.Controllers
 {
-    public class TransferController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class TransferController : ControllerBase
     {
         private readonly IRepository<Transfer, Guid> _transferRepository;
 
@@ -13,74 +15,58 @@ namespace FootballApp.Server.Controllers
             _transferRepository = transferRepository;
         }
 
-        // GET: Transfer
-        public async Task<IActionResult> Index()
+        // GET: api/Transfer
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
             var transfers = await _transferRepository.GetAllAsync();
-            return View(transfers);
+            return Ok(transfers);
         }
 
-        // GET: Transfer/Details/5
-        public async Task<IActionResult> Details(Guid id)
+        // GET: api/Transfer/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(Guid id)
         {
             var transfer = await _transferRepository.GetAsync(id);
             if (transfer == null)
             {
                 return NotFound();
             }
-            return View(transfer);
+            return Ok(transfer);
         }
 
-        // GET: Transfer/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Transfer/Create
+        // POST: api/Transfer
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("PlayerId,FromTeamId,ToTeamId,TransferDate,TransferFee")] Transfer transfer)
+        public async Task<IActionResult> Post([FromBody] Transfer transfer)
         {
             if (ModelState.IsValid)
             {
                 transfer.Id = Guid.NewGuid();
                 await _transferRepository.CreateAsync(transfer);
-                return RedirectToAction(nameof(Index));
+                return CreatedAtAction(nameof(Get), new { id = transfer.Id }, transfer);
             }
-            return View(transfer);
+            return BadRequest(ModelState);
         }
 
-        // GET: Transfer/Edit/5
-        public async Task<IActionResult> Edit(Guid id)
-        {
-            var transfer = await _transferRepository.GetAsync(id);
-            if (transfer == null)
-            {
-                return NotFound();
-            }
-            return View(transfer);
-        }
-
-        // POST: Transfer/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,PlayerId,FromTeamId,ToTeamId,TransferDate,TransferFee")] Transfer transfer)
+        // PUT: api/Transfer/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(Guid id, [FromBody] Transfer transfer)
         {
             if (id != transfer.Id)
             {
-                return NotFound();
+                return BadRequest();
             }
 
             if (ModelState.IsValid)
             {
                 await _transferRepository.UpdateAsync(transfer);
-                return RedirectToAction(nameof(Index));
+                return NoContent();
             }
-            return View(transfer);
+            return BadRequest(ModelState);
         }
 
-        // GET: Transfer/Delete/5
+        // DELETE: api/Transfer/5
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var transfer = await _transferRepository.GetAsync(id);
@@ -88,16 +74,9 @@ namespace FootballApp.Server.Controllers
             {
                 return NotFound();
             }
-            return View(transfer);
-        }
 
-        // POST: Transfer/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
             await _transferRepository.DeleteAsync(id);
-            return RedirectToAction(nameof(Index));
+            return NoContent();
         }
     }
 }

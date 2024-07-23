@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FootballApp.Server.Controllers
 {
-    public class TournamentController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class TournamentController : ControllerBase
     {
         private readonly IRepository<Tournament, Guid> _tournamentRepository;
 
@@ -13,59 +15,42 @@ namespace FootballApp.Server.Controllers
             _tournamentRepository = tournamentRepository;
         }
 
-        // GET: Tournaments
-        public async Task<IActionResult> Index()
+        // GET: api/Tournament
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
             var tournaments = await _tournamentRepository.GetAllAsync();
-            return View(tournaments);
+            return Ok(tournaments);
         }
 
-        // GET: Tournaments/Details/5
-        public async Task<IActionResult> Details(Guid id)
+        // GET: api/Tournament/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(Guid id)
         {
             var tournament = await _tournamentRepository.GetAsync(id);
             if (tournament == null)
             {
                 return NotFound();
             }
-            return View(tournament);
+            return Ok(tournament);
         }
 
-        // GET: Tournaments/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Tournaments/Create
+        // POST: api/Tournament
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,StartDate,EndDate,Sponsor")] Tournament tournament)
+        public async Task<IActionResult> Post([FromBody] Tournament tournament)
         {
             if (ModelState.IsValid)
             {
                 tournament.Id = Guid.NewGuid();
                 await _tournamentRepository.CreateAsync(tournament);
-                return RedirectToAction(nameof(Index));
+                return CreatedAtAction(nameof(Get), new { id = tournament.Id }, tournament);
             }
-            return View(tournament);
+            return BadRequest(ModelState);
         }
 
-        // GET: Tournaments/Edit/5
-        public async Task<IActionResult> Edit(Guid id)
-        {
-            var tournament = await _tournamentRepository.GetAsync(id);
-            if (tournament == null)
-            {
-                return NotFound();
-            }
-            return View(tournament);
-        }
-
-        // POST: Tournaments/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Name,StartDate,EndDate,Sponsor")] Tournament tournament)
+        // PUT: api/Tournament/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(Guid id, [FromBody] Tournament tournament)
         {
             if (id != tournament.Id)
             {
@@ -75,12 +60,13 @@ namespace FootballApp.Server.Controllers
             if (ModelState.IsValid)
             {
                 await _tournamentRepository.UpdateAsync(tournament);
-                return RedirectToAction(nameof(Index));
+                return NoContent();
             }
-            return View(tournament);
+            return BadRequest(ModelState);
         }
 
-        // GET: Tournaments/Delete/5
+        // DELETE: api/Tournament/5
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var tournament = await _tournamentRepository.GetAsync(id);
@@ -88,16 +74,9 @@ namespace FootballApp.Server.Controllers
             {
                 return NotFound();
             }
-            return View(tournament);
-        }
 
-        // POST: Tournaments/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
             await _tournamentRepository.DeleteAsync(id);
-            return RedirectToAction(nameof(Index));
+            return NoContent();
         }
     }
 }

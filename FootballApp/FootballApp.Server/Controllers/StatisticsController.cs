@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FootballApp.Server.Controllers
 {
-    public class StatisticsController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class StatisticsController : ControllerBase
     {
         private readonly IRepository<Statistics, Guid> _statisticsRepository;
 
@@ -13,59 +15,42 @@ namespace FootballApp.Server.Controllers
             _statisticsRepository = statisticsRepository;
         }
 
-        // GET: Statistics
-        public async Task<IActionResult> Index()
+        // GET: api/Statistics
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
             var statistics = await _statisticsRepository.GetAllAsync();
-            return View(statistics);
+            return Ok(statistics);
         }
 
-        // GET: Statistics/Details/5
-        public async Task<IActionResult> Details(Guid id)
+        // GET: api/Statistics/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(Guid id)
         {
             var statistics = await _statisticsRepository.GetAsync(id);
             if (statistics == null)
             {
                 return NotFound();
             }
-            return View(statistics);
+            return Ok(statistics);
         }
 
-        // GET: Statistics/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Statistics/Create
+        // POST: api/Statistics
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("PlayerId,MatchId,Goals,Assists,YellowCards,RedCards,MinutesPlayed")] Statistics statistics)
+        public async Task<IActionResult> Post([FromBody] Statistics statistics)
         {
             if (ModelState.IsValid)
             {
                 statistics.Id = Guid.NewGuid();
                 await _statisticsRepository.CreateAsync(statistics);
-                return RedirectToAction(nameof(Index));
+                return CreatedAtAction(nameof(Get), new { id = statistics.Id }, statistics);
             }
-            return View(statistics);
+            return BadRequest(ModelState);
         }
 
-        // GET: Statistics/Edit/5
-        public async Task<IActionResult> Edit(Guid id)
-        {
-            var statistics = await _statisticsRepository.GetAsync(id);
-            if (statistics == null)
-            {
-                return NotFound();
-            }
-            return View(statistics);
-        }
-
-        // POST: Statistics/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,PlayerId,MatchId,Goals,Assists,YellowCards,RedCards,MinutesPlayed")] Statistics statistics)
+        // PUT: api/Statistics/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(Guid id, [FromBody] Statistics statistics)
         {
             if (id != statistics.Id)
             {
@@ -75,12 +60,13 @@ namespace FootballApp.Server.Controllers
             if (ModelState.IsValid)
             {
                 await _statisticsRepository.UpdateAsync(statistics);
-                return RedirectToAction(nameof(Index));
+                return NoContent();
             }
-            return View(statistics);
+            return BadRequest(ModelState);
         }
 
-        // GET: Statistics/Delete/5
+        // DELETE: api/Statistics/5
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var statistics = await _statisticsRepository.GetAsync(id);
@@ -88,16 +74,9 @@ namespace FootballApp.Server.Controllers
             {
                 return NotFound();
             }
-            return View(statistics);
-        }
 
-        // POST: Statistics/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
             await _statisticsRepository.DeleteAsync(id);
-            return RedirectToAction(nameof(Index));
+            return NoContent();
         }
     }
 }

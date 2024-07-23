@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FootballApp.Server.Controllers
 {
-    public class TeamController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class TeamController : ControllerBase
     {
         private readonly IRepository<Team, Guid> _teamRepository;
 
@@ -13,59 +15,42 @@ namespace FootballApp.Server.Controllers
             _teamRepository = teamRepository;
         }
 
-        // GET: Teams
-        public async Task<IActionResult> Index()
+        // GET: api/Team
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
             var teams = await _teamRepository.GetAllAsync();
-            return View(teams);
+            return Ok(teams);
         }
 
-        // GET: Teams/Details/5
-        public async Task<IActionResult> Details(Guid id)
+        // GET: api/Team/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(Guid id)
         {
             var team = await _teamRepository.GetAsync(id);
             if (team == null)
             {
                 return NotFound();
             }
-            return View(team);
+            return Ok(team);
         }
 
-        // GET: Teams/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Teams/Create
+        // POST: api/Team
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Coach,Founded,Stadium")] Team team)
+        public async Task<IActionResult> Post([FromBody] Team team)
         {
             if (ModelState.IsValid)
             {
                 team.Id = Guid.NewGuid();
                 await _teamRepository.CreateAsync(team);
-                return RedirectToAction(nameof(Index));
+                return CreatedAtAction(nameof(Get), new { id = team.Id }, team);
             }
-            return View(team);
+            return BadRequest(ModelState);
         }
 
-        // GET: Teams/Edit/5
-        public async Task<IActionResult> Edit(Guid id)
-        {
-            var team = await _teamRepository.GetAsync(id);
-            if (team == null)
-            {
-                return NotFound();
-            }
-            return View(team);
-        }
-
-        // POST: Teams/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Name,Coach,Founded,Stadium")] Team team)
+        // PUT: api/Team/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(Guid id, [FromBody] Team team)
         {
             if (id != team.Id)
             {
@@ -75,12 +60,13 @@ namespace FootballApp.Server.Controllers
             if (ModelState.IsValid)
             {
                 await _teamRepository.UpdateAsync(team);
-                return RedirectToAction(nameof(Index));
+                return NoContent();
             }
-            return View(team);
+            return BadRequest(ModelState);
         }
 
-        // GET: Teams/Delete/5
+        // DELETE: api/Team/5
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var team = await _teamRepository.GetAsync(id);
@@ -88,16 +74,9 @@ namespace FootballApp.Server.Controllers
             {
                 return NotFound();
             }
-            return View(team);
-        }
 
-        // POST: Teams/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
             await _teamRepository.DeleteAsync(id);
-            return RedirectToAction(nameof(Index));
+            return NoContent();
         }
     }
 }

@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FootballApp.Server.Controllers
 {
-    public class MatchController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class MatchController : ControllerBase
     {
         private readonly IRepository<Match, Guid> _matchRepository;
 
@@ -13,59 +15,42 @@ namespace FootballApp.Server.Controllers
             _matchRepository = matchRepository;
         }
 
-        // GET: Matches
-        public async Task<IActionResult> Index()
+        // GET: api/Match
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
             var matches = await _matchRepository.GetAllAsync();
-            return View(matches);
+            return Ok(matches);
         }
 
-        // GET: Matches/Details/5
-        public async Task<IActionResult> Details(Guid id)
+        // GET: api/Match/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(Guid id)
         {
             var match = await _matchRepository.GetAsync(id);
             if (match == null)
             {
                 return NotFound();
             }
-            return View(match);
+            return Ok(match);
         }
 
-        // GET: Matches/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Matches/Create
+        // POST: api/Match
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Date,HomeTeamId,AwayTeamId,TournamentId,Location")] Match match)
+        public async Task<IActionResult> Post([FromBody] Match match)
         {
             if (ModelState.IsValid)
             {
                 match.Id = Guid.NewGuid();
                 await _matchRepository.CreateAsync(match);
-                return RedirectToAction(nameof(Index));
+                return CreatedAtAction(nameof(Get), new { id = match.Id }, match);
             }
-            return View(match);
+            return BadRequest(ModelState);
         }
 
-        // GET: Matches/Edit/5
-        public async Task<IActionResult> Edit(Guid id)
-        {
-            var match = await _matchRepository.GetAsync(id);
-            if (match == null)
-            {
-                return NotFound();
-            }
-            return View(match);
-        }
-
-        // POST: Matches/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Date,HomeTeamId,AwayTeamId,TournamentId,Location")] Match match)
+        // PUT: api/Match/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(Guid id, [FromBody] Match match)
         {
             if (id != match.Id)
             {
@@ -75,12 +60,13 @@ namespace FootballApp.Server.Controllers
             if (ModelState.IsValid)
             {
                 await _matchRepository.UpdateAsync(match);
-                return RedirectToAction(nameof(Index));
+                return NoContent();
             }
-            return View(match);
+            return BadRequest(ModelState);
         }
 
-        // GET: Matches/Delete/5
+        // DELETE: api/Match/5
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var match = await _matchRepository.GetAsync(id);
@@ -88,16 +74,9 @@ namespace FootballApp.Server.Controllers
             {
                 return NotFound();
             }
-            return View(match);
-        }
 
-        // POST: Matches/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
             await _matchRepository.DeleteAsync(id);
-            return RedirectToAction(nameof(Index));
+            return NoContent();
         }
     }
 }
